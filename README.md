@@ -1,4 +1,4 @@
-# BigQuery Streaming Demo with Cloud Run and Pub/Sub
+# BigQuery Streaming Demo with Cloud Run, Pub/Sub and Terraform automation
 
 This demo showcases real-time data streaming into BigQuery using Cloud Run, Pub/Sub, and a BigQuery subscription. It simulates transactional data, streams it through Pub/Sub, and then queries the resulting BigQuery table. This demonstrates a common and scalable architecture for real-time analytics.
 
