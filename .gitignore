@@ -1,0 +1,46 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files (Terraform state) - You should store this remotely, but exclude locally
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfvars files as they might contain sensitive data
+*.tfvars
+*.tfvars.json
+
+# Ignore any plan files as they might contain sensitive data
+*.tfplan
+
+# Ignore any files that contain the word "variables" in any case
+#*variables*
+#*Variables*
+
+# Provider lock file
+.terraform.lock.hcl
+
+# Ignore override files as they are usually used to override resources locally and potentially with sensitive data
+*_override.tf
+*_override.tf.json
+override.tf
+override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+streamdata-generator/env

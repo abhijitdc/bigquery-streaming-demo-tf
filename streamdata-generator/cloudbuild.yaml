@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/dctoybox-dademo/streamdata-generator', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/dctoybox-dademo/streamdata-generator']
+logsBucket: 'gs://daproject-tmp-bucket'
+serviceAccount: 'projects/dctoybox-dademo/serviceAccounts/sabuild-default@dctoybox-dademo.iam.gserviceaccount.com'
