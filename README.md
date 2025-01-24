@@ -1,17 +1,18 @@
-# Provision a GCP project using Terraform to run a cmpute VM and a BigQuery table
+# BigQuery Streaming Demo with Cloud Run and Pub/Sub
 
-## Introduction
+This demo showcases real-time data streaming into BigQuery using Cloud Run, Pub/Sub, and a BigQuery subscription. It simulates transactional data, streams it through Pub/Sub, and then queries the resulting BigQuery table. This demonstrates a common and scalable architecture for real-time analytics.
 
-This Terraform configuration automates the following
+## Architecture Overview
 
-- Provisioning of a GCP project,
-- Setup VPC, firewall rules and provision a NAT
-- Creating a BigQuery dataset and a table
-- Launch a private VM to access via IAP
+The data flows as follows:
 
-## Prerequisites
+Cloud Run (Data Generation) --> Pub/Sub Topic --> BigQuery Subscription --> BigQuery Table
 
-- A Google Cloud Platform (GCP) account.
-- The `gcloud` command-line tool installed and configured.
-- Terraform installed on your local machine.
-- Configure application default login credential
+## Key Components and Technologies
+
+- **Cloud Run:** Serverless compute platform for running the data generation script. Its scalability and on-demand nature make it ideal for this task.
+- **Pub/Sub:** Messaging service providing reliable and asynchronous data ingestion into BigQuery. This decouples the data generator from BigQuery.
+- **BigQuery:** Data warehouse for storing and analyzing the streamed data. BigQuery's ability to handle large data volumes and complex queries makes it a powerful analytics platform.
+- **Faker:** Python library used to generate realistic fake transaction data.
+- **BigQuery Subscription:** Links Pub/Sub and BigQuery, enabling automatic data streaming.
+- **Terraform:** Infrastructure-as-code tool used to define and manage the Google Cloud resources. This ensures consistent and repeatable deployments.
