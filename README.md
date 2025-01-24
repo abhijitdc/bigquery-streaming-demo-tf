@@ -15,4 +15,4 @@ Cloud Run (Data Generation) --> Pub/Sub Topic --> BigQuery Subscription --> BigQ
 - **BigQuery:** Data warehouse for storing and analyzing the streamed data. BigQuery's ability to handle large data volumes and complex queries makes it a powerful analytics platform.
 - **Faker:** Python library used to generate realistic fake transaction data.
 - **BigQuery Subscription:** Links Pub/Sub and BigQuery, enabling automatic data streaming.
-- **Terraform:** Infrastructure-as-code tool used to define and manage the Google Cloud resources. This ensures consistent and repeatable deployments.
+- **Terraform:** Infrastructure-as-code tool used to define and manage the Google Cloud resources. This ensures consistent and repeatable deployments. Terraform also dynamically modifies the Python script and Cloud Build configuration file, injecting values like the GCP Project ID and Pub/Sub topic name, streamlining the deployment process.
