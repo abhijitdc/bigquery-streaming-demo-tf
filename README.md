@@ -80,6 +80,36 @@ Terraform is responsible for:
 
 > 💡 **Note:** Terraform currently configures the Cloud Build configuration file (`cloudbuild.yaml`) but does not automatically trigger the Cloud Build process. You'll need to manually trigger the build using `gcloud builds submit` or through the Cloud Build dashboard.
 
+## Admin Project Configuration
+
+The Admin Project centralizes Terraform state storage and simplifies Cloud SDK usage. It serves as the default GCP project in your Cloud SDK and hosts the Terraform state bucket.
+
+**Why an Admin Project?**
+
+- **Centralized State:** Securely stores Terraform state files for collaboration and consistency.
+- **Simplified CLI:** Sets the default project for `gcloud` commands.
+- **Project Creation:** Allows creating new projects in your organization.
+- **Isolation:** Separates management tasks from demo project resources.
+- **Security:** Isolates admin access from user access.
+
+**Variables:**
+
+- `admin_project_id` (string, **required**): The ID of the Admin Project (e.g., `"my-gcp-admin-project"`). _Must already exist_.
+- `admin_project_region` (string, **required**): The region of the Admin Project (e.g., `"us-central1"`).
+- `tfstate_bucket_name` (string, **required**): The name of the GCS bucket for Terraform state (e.g., `"dctoybox-tfstate"`). _Must already be created in the admin project_
+- `admin_project_number` (number, **required**): The project number of the Admin Project (e.g., `789456123`).
+
+**Setup:**
+
+1.  **Create:** Create the Admin Project in GCP.
+2.  **Configure Cloud SDK:** `gcloud config set project <admin_project_id>`
+3.  **Bucket creation:** Make sure that the bucket define in `tfstate_bucket_name` is created in the admin project.
+4.  **Permissions:** Ensure your Terraform user/service account has permissions to manage Cloud Storage in the Admin Project.
+
+**Usage:**
+
+Run Terraform commands from your local machine. Terraform will store its state in the Admin Project's bucket, and your `gcloud` commands will default to this project.
+
 ## Setup
 
 This `main.tf` file orchestrates the creation of a Google Cloud Platform (GCP) project and its core components for demonstrating data streaming into BigQuery via Pub/Sub, leveraging the Google Cloud Foundation Fabric modules for automation and best practices. It also prepares a Cloud Run job and cloud build deployment.
