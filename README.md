@@ -112,7 +112,7 @@ Run Terraform commands from your local machine. Terraform will store its state i
 
 ## Setup
 
-This `main.tf` file orchestrates the creation of a Google Cloud Platform (GCP) project and its core components for demonstrating data streaming into BigQuery via Pub/Sub, leveraging the Google Cloud Foundation Fabric modules for automation and best practices. It also prepares a Cloud Run job and cloud build deployment.
+This `main.tf` file orchestrates the creation of a Google Cloud Platform (GCP) project and its core components for demonstrating data streaming into BigQuery via Pub/Sub, leveraging the Google **[cloud-foundation-fabric](https://github.com/GoogleCloudPlatform/cloud-foundation-fabric/)** modules for automation and best practices. It also prepares a Cloud Run job and cloud build deployment.
 
 **Key Responsibilities:**
 
