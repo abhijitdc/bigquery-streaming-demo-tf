@@ -4,10 +4,10 @@ locals {
 
   iams = {
     pubsubAdmin = { role = "roles/pubsub.admin"
-      member = "user:${var.admin_user_email}"
+      member = "user:${var.tfrunner_user_email}"
     }
     bqAdmin = { role = "roles/bigquery.admin"
-      member = "user:${var.admin_user_email}"
+      member = "user:${var.tfrunner_user_email}"
     }
   }
 
@@ -132,11 +132,19 @@ data "local_file" "topic_schema" {
   filename = "./topic_schema.json"
 }
 
+
+resource "random_string" "bucket_suffix" {
+  length  = 6
+  lower   = true
+  upper   = false
+  special = false
+}
+
 module "bucket" {
   source                   = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/gcs?ref=v36.1.0"
   project_id               = var.project_id
   prefix                   = "daproject"
-  name                     = "tmp-bucket"
+  name                     = "tmp-bucket-${random_string.bucket_suffix.result}"
   location                 = var.resource_location
   public_access_prevention = var.public_access_prevention
   versioning               = false
@@ -215,7 +223,24 @@ resource "local_file" "local_buildfile_to_deploy" {
   )
 }
 
+resource "null_resource" "run_cloudbuild_script" {
+
+  depends_on = [local_file.local_buildfile_to_deploy]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  # Use local-exec to run the script.
+  provisioner "local-exec" {
+    command = "gcloud builds submit --config ./streamdata-generator/cloudbuild.yaml ./streamdata-generator --project=${var.project_id}"
+  }
+}
+
 module "cloud_run" {
+
+  depends_on = [null_resource.run_cloudbuild_script]
+
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/cloud-run-v2?ref=v36.1.0"
   project_id = var.project_id
   name       = "streamdata-generator"

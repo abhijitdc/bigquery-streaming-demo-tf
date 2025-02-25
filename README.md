@@ -27,6 +27,7 @@ This demo showcases real-time data streaming into BigQuery using Cloud Run, Pub/
 - Manages IAM permissions.
 - Manages Terraform state and provider versions.
 - Creates `main.py` and `cloudbuild.yaml` from Jinja templates.
+- **Triggers Cloud Build:** Submits the Cloud Build job locally using `gcloud`
 
 **`streamdata-generator` (Cloud Run Job):**
 
@@ -77,27 +78,7 @@ Terraform is responsible for:
 2. Creating a Cloud Run job to stream the data.
 3. Create the required service account and permissions.
 4. Create the required pub/sub topic.
-
-> 💡 **Note:** Terraform currently configures the Cloud Build configuration file (`cloudbuild.yaml`) but does not automatically trigger the Cloud Build process. You'll need to manually trigger the build using `gcloud builds submit` or through the Cloud Build dashboard.
-
-## Admin Project Configuration
-
-The Admin Project centralizes Terraform state storage and simplifies Cloud SDK usage. It serves as the default GCP project in your Cloud SDK and hosts the Terraform state bucket.
-
-**Why an Admin Project?**
-
-- **Centralized State:** Securely stores Terraform state files for collaboration and consistency.
-- **Simplified CLI:** Sets the default project for `gcloud` commands.
-- **Project Creation:** Allows creating new projects in your organization.
-- **Isolation:** Separates management tasks from demo project resources.
-- **Security:** Isolates admin access from user access.
-
-**Variables:**
-
-- `admin_project_id` (string, **required**): The ID of the Admin Project (e.g., `"my-gcp-admin-project"`). _Must already exist_.
-- `admin_project_region` (string, **required**): The region of the Admin Project (e.g., `"us-central1"`).
-- `tfstate_bucket_name` (string, **required**): The name of the GCS bucket for Terraform state (e.g., `"dctoybox-tfstate"`). _Must already be created in the admin project_
-- `admin_project_number` (number, **required**): The project number of the Admin Project (e.g., `789456123`).
+5. **Submitting the Cloud Build Job:** Uses a `null_resource` and `local-exec` provisioner to execute the `gcloud builds submit` command, building and deploying the Cloud Run job.
 
 **Setup:**
 
@@ -149,6 +130,7 @@ This `main.tf` file orchestrates the creation of a Google Cloud Platform (GCP) p
 - **Cloud Build:**
   - Create the local file `main.py` from `main.tpl` and inject project and topic information.
   - Create the local file `cloudbuild.yaml` from `cloudbuild.tpl` and inject project, service account and bucket information.
+  - **Executes Cloud Build:** Triggers the `gcloud builds submit` command locally after creating the `cloudbuild.yaml` file.
 
 **Dependencies & Configuration:**
 
@@ -160,4 +142,4 @@ This `main.tf` file orchestrates the creation of a Google Cloud Platform (GCP) p
 
 **In Summary:**
 
-The `main.tf` file automates the deployment of a complete GCP environment for a data streaming demonstration. It handles project setup, networking, security, data storage, Pub/Sub, and Cloud Run, promoting reusability and consistency through the use of variables, modules, and a state backend. It also handle the creation of local files for cloud run deployment.
+The `main.tf` file automates the deployment of a complete GCP environment for a data streaming demonstration. It handles project setup, networking, security, data storage, Pub/Sub, and Cloud Run, promoting reusability and consistency through the use of variables, modules, and a state backend. It also handle the creation of local files for cloud run deployment and trigger the cloud build.

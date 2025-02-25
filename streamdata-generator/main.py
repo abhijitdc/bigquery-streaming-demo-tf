@@ -16,7 +16,7 @@ if topic_name is None:
     raise ValueError("Please set the environment variable PUBSUB_TOPIC")
 
 # Do the same for project id
-project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "dctoybox-dademo")
+project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "bqstream-dademo")
 if project_id is None:
     raise ValueError("Please set the environment variable GOOGLE_CLOUD_PROJECT")
 
