@@ -12,13 +12,29 @@
   {
     "mode": "NULLABLE",
     "name": "amount",
-    "type": "FLOAT64"  
+    "type": "FLOAT64"
   },
   {
     "mode": "NULLABLE",
-    "name": "item",
+    "name": "merchandise_category",
     "type": "STRING"
   },
+  {
+    "mode": "NULLABLE",
+    "name": "merchandise_name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "merchandise_price",
+    "type": "FLOAT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "merchandise_description",
+    "type": "STRING"
+  },
+
   {
     "mode": "NULLABLE",
     "name": "location",

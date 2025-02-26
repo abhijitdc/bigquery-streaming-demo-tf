@@ -218,12 +218,12 @@ class EcommerceProvider(BaseProvider):
 
 # Add the custom provider to Faker
 fake.add_provider(EcommerceProvider)
-topic_name = os.environ.get("PUBSUB_TOPIC", "${topic_name}")
+topic_name = os.environ.get("PUBSUB_TOPIC", "fake-txn-topic")
 if topic_name is None:
     raise ValueError("Please set the environment variable PUBSUB_TOPIC")
 
 # Do the same for project id
-project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "${project_id}")
+project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "bqworkflow-dademo")
 if project_id is None:
     raise ValueError("Please set the environment variable GOOGLE_CLOUD_PROJECT")
 

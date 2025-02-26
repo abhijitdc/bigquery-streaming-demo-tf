@@ -45,7 +45,7 @@ module "project" {
 
 module "project-default-service-accounts" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
-  project_id = var.project_id
+  project_id = module.project.project_id
   name       = "sa-default"
   # non-authoritative roles granted *to* the service accounts on other resources
   iam_project_roles = {
@@ -62,11 +62,11 @@ module "project-default-service-accounts" {
 
 module "project-cloudbuild-service-accounts" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
-  project_id = var.project_id
+  project_id = module.project.project_id
   name       = "sabuild-default"
   # non-authoritative roles granted *to* the service accounts on other resources
   iam_project_roles = {
-    "${var.project_id}" = [
+    "${module.project.project_id}" = [
       "roles/storage.admin",
       "roles/artifactregistry.createOnPushWriter",
       "roles/artifactregistry.reader",
