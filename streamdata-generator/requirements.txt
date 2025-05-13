@@ -3,3 +3,4 @@ google-cloud-pubsub
 google-cloud-bigquery-storage  
 Faker
 ratelimit
+pandas==2.1.3

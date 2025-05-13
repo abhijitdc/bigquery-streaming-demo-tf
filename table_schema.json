@@ -6,38 +6,57 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "timestamp",
+    "name": "order_timestamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "product_category",
     "type": "STRING"
   },
   {
     "mode": "NULLABLE",
-    "name": "amount",
+    "name": "product_name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "product_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "product_price",
     "type": "FLOAT64"
   },
   {
     "mode": "NULLABLE",
-    "name": "merchandise_category",
+    "name": "product_description",
     "type": "STRING"
   },
   {
     "mode": "NULLABLE",
-    "name": "merchandise_name",
+    "name": "city",
     "type": "STRING"
   },
   {
     "mode": "NULLABLE",
-    "name": "merchandise_price",
-    "type": "FLOAT64"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "merchandise_description",
+    "name": "country",
     "type": "STRING"
   },
-
   {
     "mode": "NULLABLE",
-    "name": "location",
+    "name": "latitude",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "longitude",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "timezone",
     "type": "STRING"
   },
   {
@@ -53,11 +72,6 @@
   {
     "mode": "NULLABLE",
     "name": "currency",
-    "type": "STRING"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "country",
     "type": "STRING"
   },
   {
@@ -78,6 +92,6 @@
   {
     "mode": "NULLABLE",
     "name": "created_at",
-    "type": "STRING"
+    "type": "TIMESTAMP"
   }
 ]

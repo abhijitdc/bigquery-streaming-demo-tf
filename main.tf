@@ -125,7 +125,7 @@ module "nat" {
 }
 
 data "local_file" "table_schema" {
-  filename = "./user_schema.json"
+  filename = "./table_schema.json"
 }
 
 data "local_file" "topic_schema" {
@@ -228,12 +228,12 @@ resource "null_resource" "run_cloudbuild_script" {
   depends_on = [local_file.local_buildfile_to_deploy]
 
   triggers = {
-    always_run = timestamp()
+    script_hash = "${sha256(local_file.local_pyfile_to_deploy.content)}"
   }
 
   # Use local-exec to run the script.
   provisioner "local-exec" {
-    command = "gcloud builds submit --config ./streamdata-generator/cloudbuild.yaml ./streamdata-generator --project=${var.project_id}"
+    command = "gcloud builds submit --config ./streamdata-generator/cloudbuild.yaml ./streamdata-generator --project=${module.project.project_id}"
   }
 }
 
@@ -242,16 +242,18 @@ module "cloud_run" {
   depends_on = [null_resource.run_cloudbuild_script]
 
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/cloud-run-v2?ref=v36.1.0"
-  project_id = var.project_id
+  project_id = module.project.project_id
   name       = "streamdata-generator"
   region     = var.resource_location
   create_job = true
   containers = {
     streamdata-generator = {
-      image = "gcr.io/${var.project_id}/streamdata-generator"
+      image = "gcr.io/${module.project.project_id}/streamdata-generator"
       env = {
-        GOOGLE_CLOUD_PROJECT = "${var.project_id}"
+        GOOGLE_CLOUD_PROJECT = "${module.project.project_id}"
         PUBSUB_TOPIC         = "${module.pubsub.topic.name}"
+        MIN_TPS              = 100
+        MAX_TPS              = 2000
       }
     }
   }

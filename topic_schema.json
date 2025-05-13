@@ -1,22 +1,68 @@
 {
   "type": "record",
   "name": "Avro",
+
   "fields": [
-    { "name": "user_id", "type": "string" },
-    { "name": "timestamp", "type": "string" },
-    { "name": "amount", "type": "double" },
-    { "name": "merchandise_category", "type": "string" },
-    { "name": "merchandise_name", "type": "string" },
-    { "name": "merchandise_price", "type": "double" },
-    { "name": "merchandise_description", "type": "string" },
-    { "name": "location", "type": "string" },
-    { "name": "payment_method", "type": "string" },
-    { "name": "status", "type": "string" },
-    { "name": "currency", "type": "string" },
+    {
+      "name": "user_id",
+      "type": "string"
+    },
+    {
+      "name": "order_timestamp",
+      "type": "string"
+    },
+    {
+      "name": "product_category",
+      "type": "string"
+    },
+    {
+      "name": "product_name",
+      "type": "string"
+    },
+    {
+      "name": "product_id",
+      "type": "int"
+    },
+    {
+      "name": "product_price",
+      "type": "double"
+    },
+    {
+      "name": "product_description",
+      "type": "string"
+    },
+    { "name": "city", "type": "string" },
     { "name": "country", "type": "string" },
-    { "name": "device", "type": "string" },
-    { "name": "ip_address", "type": "string" },
-    { "name": "user_agent", "type": "string" },
-    { "name": "created_at", "type": "string" }
+    { "name": "latitude", "type": "string" },
+    { "name": "longitude", "type": "string" },
+    { "name": "timezone", "type": "string" },
+    {
+      "name": "payment_method",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    },
+    {
+      "name": "currency",
+      "type": "string"
+    },
+    {
+      "name": "device",
+      "type": "string"
+    },
+    {
+      "name": "ip_address",
+      "type": "string"
+    },
+    {
+      "name": "user_agent",
+      "type": "string"
+    },
+    {
+      "name": "created_at",
+      "type": "string"
+    }
   ]
 }

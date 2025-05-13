@@ -1,7 +1,7 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/bqworkflow-dademo/streamdata-generator', '.']
+  args: ['build', '-t', 'gcr.io/bq-agent-demo/streamdata-generator', '.']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/bqworkflow-dademo/streamdata-generator']
+  args: ['push', 'gcr.io/bq-agent-demo/streamdata-generator']
 logsBucket: 'gs://daproject-tmp-bucket-myji92'
-serviceAccount: 'projects/bqworkflow-dademo/serviceAccounts/sabuild-default@bqworkflow-dademo.iam.gserviceaccount.com'
+serviceAccount: 'projects/bq-agent-demo/serviceAccounts/sabuild-default@bq-agent-demo.iam.gserviceaccount.com'

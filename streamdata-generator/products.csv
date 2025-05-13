@@ -1,0 +1,77 @@
+product_id,category,name,description,price
+1,Electronics,Wireless Headphones,High-quality wireless headphones with noise cancellation,199.99
+2,Electronics,Smartwatch,Feature-rich smartwatch with fitness tracking,299.99
+3,Electronics,Bluetooth Speaker,Portable Bluetooth speaker with great sound,79.99
+4,Electronics,Laptop,Powerful laptop for work and play,1299.99
+5,Electronics,Gaming Console,Next-gen gaming console with stunning graphics,499.99
+6,Clothing,T-Shirt,Comfortable cotton T-shirt,19.99
+7,Clothing,Jeans,Stylish and durable denim jeans,59.99
+8,Clothing,Dress,Elegant dress for special occasions,89.99
+9,Clothing,Jacket,Warm and fashionable jacket,79.99
+10,Clothing,Sweater,Cozy sweater for chilly days,49.99
+11,Books,Novel,Captivating fiction novel,14.99
+12,Books,Textbook,Comprehensive textbook for students,69.99
+13,Books,Cookbook,Delicious recipes for all skill levels,24.99
+14,Books,Biography,Inspiring true story biography,19.99
+15,Books,Self-Help Book,Motivational self-help guide,12.99
+16,Home & Garden,Couch,Comfortable sectional couch,799.99
+17,Home & Garden,Bed,King-size memory foam bed,999.99
+18,Home & Garden,Table,Rustic wooden dining table,399.99
+19,Home & Garden,Chair,Ergonomic office chair,249.99
+20,Home & Garden,Lamp,Modern floor lamp with adjustable settings,129.99
+21,Beauty & Personal Care,Moisturizer,Hydrating facial moisturizer,29.99
+22,Beauty & Personal Care,Shampoo,Shampoo for all hair types,14.99
+23,Beauty & Personal Care,Conditioner,Deep conditioning hair treatment,14.99
+24,Beauty & Personal Care,Makeup Kit,All-in-one makeup set,49.99
+25,Beauty & Personal Care,Perfume,Elegant and long-lasting perfume,59.99
+26,Toys & Games,Action Figure,Collectible action figure,24.99
+27,Toys & Games,Board Game,Fun board game for families,39.99
+28,Toys & Games,Puzzle,Challenging jigsaw puzzle,19.99
+29,Toys & Games,Doll,Fashionable doll with accessories,29.99
+30,Toys & Games,Stuffed Animal,Cuddly plush stuffed animal,14.99
+31,Sports & Outdoors,Running Shoes,High-performance running shoes,99.99
+32,Sports & Outdoors,Yoga Mat,Non-slip yoga mat for all levels,39.99
+33,Sports & Outdoors,Bicycle,Durable mountain bicycle,349.99
+34,Sports & Outdoors,Camping Tent,Waterproof and spacious camping tent,149.99
+35,Sports & Outdoors,Hiking Backpack,Comfortable hiking backpack with multiple compartments,89.99
+36,Groceries,Cereal,Nutritious breakfast cereal,4.99
+37,Groceries,Milk,Fresh dairy milk,3.99
+38,Groceries,Bread,Artisan sourdough bread,5.99
+39,Groceries,Fruit,Assorted fresh fruit mix,7.99
+40,Groceries,Vegetables,Organic mixed vegetables,6.99
+41,Jewelry,Necklace,Elegant silver necklace,79.99
+42,Jewelry,Bracelet,Charming gold bracelet,69.99
+43,Jewelry,Ring,Classic diamond ring,199.99
+44,Jewelry,Earrings,Stylish hoop earrings,49.99
+45,Jewelry,Watch,Sophisticated wristwatch,149.99
+46,Pet Supplies,Dog Food,Premium dog food,29.99
+47,Pet Supplies,Cat Food,Nutritious cat food,24.99
+48,Pet Supplies,Dog Leash,Durable dog leash,14.99
+49,Pet Supplies,Cat Litter,Odor-controlling cat litter,19.99
+50,Pet Supplies,Pet Bed,Comfortable pet bed,39.99
+51,Automotive,Car Oil,Synthetic motor oil,29.99
+52,Automotive,Tire Inflator,Portable tire inflator,39.99
+53,Automotive,Car Wash Soap,Premium car wash soap,9.99
+54,Automotive,Car Seat Cover,Protective car seat cover,49.99
+55,Automotive,Car Air Freshener,Long-lasting car air freshener,4.99
+56,Handmade,Handmade Pottery,Unique handmade pottery item,39.99
+57,Handmade,Knitted Scarf,Warm and cozy knitted scarf,44.99
+58,Handmade,Hand-painted Mug,Artistic hand-painted ceramic mug,24.99
+59,Handmade,Handmade Jewelry,Elegant handmade jewelry piece,59.99
+60,Handmade,Crochet Blanket,Soft and cozy crochet blanket,69.99
+61,Office Products,Notebook,Spiral bound notebook for writing,9.99
+62,Office Products,Pen,High quality pen,1.99
+63,Office Products,Paper,Printer and writing paper,14.99
+64,Office Products,Desk Organizer,Organizing tools for the office,29.99
+65,Office Products,Stapler,Stapler for the office,9.99
+66,Health & Wellness,Vitamins,Multivitamins,14.99
+67,Health & Wellness,Supplements,Health supplements,19.99
+68,Health & Wellness,Essential Oils,Essential oils,24.99
+69,Health & Wellness,Herbal Tea,Soothing herbal tea,9.99
+70,Health & Wellness,Weight Scale,Digital weight scale,34.99
+71,Arts & Crafts,Paint,High quality paint,19.99
+72,Arts & Crafts,Paintbrushes,Set of paintbrushes,14.99
+73,Arts & Crafts,Canvas,Canvas for painting,19.99
+74,Arts & Crafts,Clay,Modeling clay for projects,9.99
+75,Arts & Crafts,Sewing Kit,Complete sewing kit,29.99
+

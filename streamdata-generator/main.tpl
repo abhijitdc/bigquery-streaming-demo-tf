@@ -1,219 +1,72 @@
 import random
 from faker import Faker
-from faker.providers import BaseProvider
+from faker.providers import BaseProvider, geo
 from google.cloud import pubsub_v1
 import time
 from ratelimit import limits, sleep_and_retry, RateLimitException
 import datetime
 import json
 import os
+import pandas as pd
 
 # Initialize Faker and PubSub
 fake = Faker()
+fake.add_provider(geo)
 publisher = pubsub_v1.PublisherClient()
-# Take the topic name from environment variable
 
+#DEPRECATED
 
-# Create a custom provider for e-commerce merchandise
+# Create a custom provider for e-commerce products
 class EcommerceProvider(BaseProvider):
-    def merchandise_category(self):
-        """Returns a random e-commerce merchandise category."""
-        categories = [
-            "Electronics",
-            "Clothing",
-            "Books",
-            "Home & Garden",
-            "Beauty & Personal Care",
-            "Toys & Games",
-            "Sports & Outdoors",
-            "Groceries",
-            "Jewelry",
-            "Pet Supplies",
-            "Automotive",
-            "Handmade",
-            "Office Products",
-            "Health & Wellness",
-            "Arts & Crafts",
-        ]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Load product data from CSV into a Pandas DataFrame
+        self.product_data = pd.read_csv("products.csv")
+        # Create a product dictionary for fast access
+        self.product_dict = self._create_product_dict()
+
+    def _create_product_dict(self):
+        """Creates a dictionary for quick lookup of products by ID."""
+        product_dict = {}
+        for index, row in self.product_data.iterrows():
+            product_dict[row["product_id"]] = row.to_dict()
+        return product_dict
+
+    def product_category(self):
+        """Returns a random product category."""
+        categories = self.product_data["category"].unique().tolist()
         return self.random_element(categories)
 
-    def merchandise_name(self, category=None):
-        """Returns a random merchandise name, optionally within a category."""
-        if category == "Electronics":
-            items = [
-                "Wireless Headphones",
-                "Smartwatch",
-                "Bluetooth Speaker",
-                "Laptop",
-                "Gaming Console",
-                "Smartphone",
-                "Tablet",
-                "Camera",
-                "TV",
-                "Drone",
-            ]
-        elif category == "Clothing":
-            items = [
-                "T-Shirt",
-                "Jeans",
-                "Dress",
-                "Jacket",
-                "Sweater",
-                "Hoodie",
-                "Shoes",
-                "Socks",
-                "Hat",
-                "Scarf",
-            ]
-        elif category == "Books":
-            items = [
-                "Novel",
-                "Textbook",
-                "Cookbook",
-                "Biography",
-                "Self-Help Book",
-                "Comic Book",
-                "Travel Guide",
-                "Children's Book",
-                "Poetry Collection",
-            ]
-        elif category == "Home & Garden":
-            items = [
-                "Couch",
-                "Bed",
-                "Table",
-                "Chair",
-                "Lamp",
-                "Rug",
-                "Pillow",
-                "Curtains",
-                "Gardening Tools",
-                "Plant Pot",
-            ]
-        elif category == "Beauty & Personal Care":
-            items = [
-                "Moisturizer",
-                "Shampoo",
-                "Conditioner",
-                "Makeup Kit",
-                "Perfume",
-                "Soap",
-                "Toothpaste",
-                "Hairbrush",
-                "Sunscreen",
-            ]
-        elif category == "Toys & Games":
-            items = [
-                "Action Figure",
-                "Board Game",
-                "Puzzle",
-                "Doll",
-                "Stuffed Animal",
-                "Building Blocks",
-                "Remote Control Car",
-                "Video Game",
-            ]
-        elif category == "Sports & Outdoors":
-            items = [
-                "Running Shoes",
-                "Yoga Mat",
-                "Bicycle",
-                "Camping Tent",
-                "Hiking Backpack",
-                "Water Bottle",
-                "Sports Ball",
-                "Swimsuit",
-            ]
-        elif category == "Groceries":
-            items = [
-                "Cereal",
-                "Milk",
-                "Bread",
-                "Fruit",
-                "Vegetables",
-                "Pasta",
-                "Rice",
-                "Coffee",
-                "Tea",
-            ]
-        elif category == "Jewelry":
-            items = [
-                "Necklace",
-                "Bracelet",
-                "Ring",
-                "Earrings",
-                "Watch",
-                "Brooch",
-                "Anklet",
-            ]
-        elif category == "Pet Supplies":
-            items = [
-                "Dog Food",
-                "Cat Food",
-                "Dog Leash",
-                "Cat Litter",
-                "Pet Bed",
-                "Pet Toys",
-                "Fish Tank",
-            ]
-        elif category == "Automotive":
-            items = [
-                "Car Oil",
-                "Tire Inflator",
-                "Car Wash Soap",
-                "Car Seat Cover",
-                "Car Air Freshener",
-            ]
-        elif category == "Handmade":
-            items = [
-                "Handmade Pottery",
-                "Knitted Scarf",
-                "Hand-painted Mug",
-                "Handmade Jewelry",
-                "Crochet Blanket",
-            ]
-        elif category == "Office Products":
-            items = [
-                "Notebook",
-                "Pen",
-                "Paper",
-                "Desk Organizer",
-                "Stapler",
-                "Printer",
-                "Office Chair",
-            ]
-        elif category == "Health & Wellness":
-            items = [
-                "Vitamins",
-                "Supplements",
-                "Essential Oils",
-                "Herbal Tea",
-                "Weight Scale",
-            ]
-        elif category == "Arts & Crafts":
-            items = ["Paint", "Paintbrushes", "Canvas", "Clay", "Sewing Kit"]
+    def get_random_product_id(self, category):
+      """Returns a random product_id from a category"""
+      category_products = self.product_data[self.product_data["category"] == category]
+      return self.random_element(category_products["product_id"].tolist())
 
+
+    def product_name(self, product_id):
+        """Returns a product name based on product ID."""
+        if product_id in self.product_dict:
+            return self.product_dict[product_id]["name"]
         else:
-            items = [
-                "Generic Product 1",
-                "Generic Product 2",
-                "Generic Product 3",
-                "Generic Item",
-                "Gadget",
-            ]
+            return None
 
-        return self.random_element(items)
+    def product_id(self,category):
+      """Returns a random product id based on the category"""
+      return self.get_random_product_id(category)
 
-    def merchandise_price(self, min_price=1, max_price=1000):
-        """Generate a random merchandise price"""
-        return round(random.uniform(min_price, max_price), 2)
-
-    def merchandise_description(self, category=None):
-        """Returns a short description about an item."""
-        if category:
-            return f"This is a high quality {self.merchandise_name(category)} for the {category} category"
+    def product_price(self, product_id):
+        """Returns a product price based on product ID."""
+        if product_id in self.product_dict:
+            return self.product_dict[product_id]["price"]
         else:
-            return f"A generic item good for general usage"
+            return None
+
+    def product_description(self, product_id):
+        """Returns a product description based on product ID."""
+        if product_id in self.product_dict:
+            return self.product_dict[product_id]["description"]
+        else:
+            return None
 
 
 # Add the custom provider to Faker
@@ -229,27 +82,33 @@ if project_id is None:
 
 topic_path = publisher.topic_path(project_id, topic_name)
 
-# Read TPS from environemnt variable or use default
-TPS = int(os.environ.get("TPS", 10))
+# Read MIN_TPS and MAX_TPS from environment variables or use defaults
+MIN_TPS = int(os.environ.get("MIN_TPS", 5))
+MAX_TPS = int(os.environ.get("MAX_TPS", 1500))
 
 
 # Generate and publish fake transactions data using Faker Providers
 def generate_transaction():
+    category = fake.product_category()
+    product_id = fake.product_id(category)
+    # Get location data
+    latitude, longitude,city,country,timezone = fake.location_on_land()
     transaction = {
-        "user_id": fake.uuid4(),
-        "timestamp": fake.date_time_this_year().isoformat(),
-        "amount": random.uniform(1.0, 1000.0),
-        "merchandise_category": fake.merchandise_category(),
-        "merchandise_name": fake.merchandise_name(fake.merchandise_category()),
-        "merchandise_price": fake.merchandise_price(),
-        "merchandise_description": fake.merchandise_description(
-            fake.merchandise_category()
-        ),
-        "location": fake.city(),
+        "user_id": str(random.randint(10000, 99999)),
+        "order_timestamp": fake.date_time_this_year().isoformat(),
+        "product_category": category,
+        "product_name": fake.product_name(product_id),
+        "product_id": product_id,
+        "product_price": fake.product_price(product_id),
+        "product_description": fake.product_description(product_id),
+        "city": city,
+        "country": country,
+        "latitude": latitude,
+        "longitude": longitude,
+        "timezone": timezone,
         "payment_method": random.choice(["credit_card", "debit_card", "paypal"]),
         "status": random.choice(["pending", "completed", "failed"]),
         "currency": random.choice(["USD", "EUR", "GBP", "JPY", "CAD"]),
-        "country": fake.country(),
         "device": fake.user_agent(),
         "ip_address": fake.ipv4(),
         "user_agent": fake.user_agent(),
@@ -259,13 +118,15 @@ def generate_transaction():
     return transaction
 
 
-# chnage the transaction generation to a TPS based on an environment varibale provided
-@sleep_and_retry
-@limits(calls=TPS, period=1)
-def publish_message(message):
-    future = publisher.publish(topic_path, data=message)
-    print(f"Published message ID: {future.result()}")
-    # print(message)
+
+def publish_message(message, current_tps):
+    """Publishes a message to Pub/Sub with rate limiting."""
+    @sleep_and_retry
+    @limits(calls=current_tps, period=1)
+    def _publish():
+        future = publisher.publish(topic_path, data=message)
+        # print(f"Published message ID: {future.result()}")
+    _publish()
 
 
 while True:
@@ -279,7 +140,13 @@ while True:
     message = transaction_json.encode("utf-8")
 
     try:
-        publish_message(message)
+        # Introduce randomness in TPS
+        current_tps = random.randint(MIN_TPS, MAX_TPS)
+        publish_message(message, current_tps)
+        # print(f"Current TPS: {current_tps}") # Uncomment to see the current TPS
     except RateLimitException as e:
         print(f"Rate limit exceeded: {e}")
+        time.sleep(1)  # Wait for 1 second before retrying
+    except Exception as e:
+        print(f"Error publishing message: {e}")
         time.sleep(1)  # Wait for 1 second before retrying
