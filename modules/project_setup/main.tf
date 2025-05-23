@@ -1,9 +1,3 @@
-provider "google" {
-  # Assuming the provider configuration from the root main.tf is sufficient
-  # and will be inherited. If specific settings like user_project_override
-  # are needed per module, they would be configured here or passed via variables.
-}
-
 locals {
   # Define services and IAM policies that are core to this project setup module
   # These were previously in the root main.tf's local block
