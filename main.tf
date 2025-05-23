@@ -1,5 +1,11 @@
 
 
+
+provider "google" {
+  user_project_override = true
+  billing_project       = "dctoybox"
+}
+
 locals {
 
   iams = {
@@ -36,6 +42,15 @@ locals {
   ]
 }
 
+#########################
+# Enable These Servcies on host project. Required for org policy changes.
+# Essentially, dctoybox needs to have all these APIs enabled, because it's the project used by ADC and it's footing the (quota) bill for your user-initiated API calls.
+## gcloud services enable serviceusage.googleapis.com --project=dctoybox
+## gcloud services enable orgpolicy.googleapis.com --project=dctoybox
+## gcloud services enable pubsub.googleapis.com --project=dctoybox
+## gcloud services enable iam.googleapis.com --project=dctoybox
+
+#########################
 # Creates the GCP project using the Cloud Foundation Fabric project module.
 module "project" {
   source                = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/project?ref=v36.1.0"
@@ -44,13 +59,11 @@ module "project" {
   parent                = var.folder_id
   services              = local.services
   iam_bindings_additive = local.iams
-  # org_policies = {
-  #   "constraints/compute.requireOsLogin" = {
-  #     rules = [{
-  #       default = true
-  #     }]
-  #   }
-  # }
+  org_policies = {
+    "compute.requireOsLogin" = {
+      rules = [{ enforce = false }]
+    }
+  }
 }
 
 # Grants the required IAM permissions role to the default Compute Engine service account for the project.
