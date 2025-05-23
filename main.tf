@@ -1,13 +1,3 @@
-terraform {
-  required_version = ">= 1.0" # Or your specific version requirement
-  required_providers {
-    google = {
-      source  = "hashicorp/google"
-      version = "~> 5.0" # Or your specific version constraint
-    }
-  }
-}
-
 provider "google" {
   user_project_override = true
   # billing_project might be needed if the user running terraform isn't the project owner
