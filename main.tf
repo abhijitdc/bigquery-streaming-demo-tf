@@ -1,31 +1,50 @@
-
-
+terraform {
+  required_version = ">= 1.0" # Or your specific version requirement
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0" # Or your specific version constraint
+    }
+  }
+}
 
 provider "google" {
   user_project_override = true
-  billing_project       = "dctoybox"
+  # billing_project might be needed if the user running terraform isn't the project owner
+  # billing_project       = "dctoybox" # This was in the original, keep if necessary
 }
 
-locals {
+# Variables are defined in variables.tf.
+# No major locals needed here anymore, they are encapsulated in modules.
 
-  iams = {
-    pubsubAdmin = { role = "roles/pubsub.admin"
-      member = "user:${var.tfrunner_user_email}"
-    }
-    bqAdmin = { role = "roles/bigquery.admin"
-      member = "user:${var.tfrunner_user_email}"
-    }
-  }
+# Module 1: Project Setup (Foundation)
+module "project_setup" {
+  source   = "./modules/project_setup"
 
-  services = [
-    "orgpolicy.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "servicemanagement.googleapis.com",
-    "iam.googleapis.com",
-    "cloudasset.googleapis.com",
-    "storage-api.googleapis.com",
-    "storage-component.googleapis.com",
-    "compute.googleapis.com",
+  tfrunner_user_email = var.tfrunner_user_email
+  project_id_suffix   = var.project_id # The original var.project_id is used as the suffix/name here
+  billing_account_id  = var.billing_account_id
+  folder_id           = var.folder_id
+  enable_oslogin      = false # Matches original "compute.requireOsLogin" = { rules = [{ enforce = false }] }
+  
+  # Example of adding custom services beyond the module's core list:
+  # custom_services     = ["dataflow.googleapis.com", "notebooks.googleapis.com"] 
+  # The core services list in the module already includes many of the original ones.
+  # We need to ensure all originally listed services in local.services are covered
+  # either in project_setup/main.tf's core_services or passed via custom_services.
+  # Original services:
+  # "orgpolicy.googleapis.com", "cloudresourcemanager.googleapis.com", "servicemanagement.googleapis.com",
+  # "iam.googleapis.com", "cloudasset.googleapis.com", "storage-api.googleapis.com", "storage-component.googleapis.com",
+  # "compute.googleapis.com", "dataflow.googleapis.com", "bigquery.googleapis.com", "bigquerystorage.googleapis.com",
+  # "bigqueryconnection.googleapis.com", "bigquerydatatransfer.googleapis.com", "analyticshub.googleapis.com",
+  # "notebooks.googleapis.com", "pubsub.googleapis.com", "artifactregistry.googleapis.com",
+  # "cloudbuild.googleapis.com", "run.googleapis.com", "serviceusage.googleapis.com", "logging.googleapis.com"
+  # The project_setup module has:
+  # "orgpolicy.googleapis.com", "cloudresourcemanager.googleapis.com", "servicemanagement.googleapis.com", "iam.googleapis.com",
+  # "cloudasset.googleapis.com", "storage-api.googleapis.com", "storage-component.googleapis.com", "compute.googleapis.com",
+  # "serviceusage.googleapis.com", "logging.googleapis.com"
+  # So, we need to pass the rest via custom_services:
+  custom_services = [
     "dataflow.googleapis.com",
     "bigquery.googleapis.com",
     "bigquerystorage.googleapis.com",
@@ -36,272 +55,109 @@ locals {
     "pubsub.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "run.googleapis.com",
-    "serviceusage.googleapis.com",
-    "logging.googleapis.com"
+    "run.googleapis.com"
   ]
 }
 
-#########################
-# Enable These Servcies on host project. Required for org policy changes.
-# Essentially, dctoybox needs to have all these APIs enabled, because it's the project used by ADC and it's footing the (quota) bill for your user-initiated API calls.
-## gcloud services enable serviceusage.googleapis.com --project=dctoybox
-## gcloud services enable orgpolicy.googleapis.com --project=dctoybox
-## gcloud services enable pubsub.googleapis.com --project=dctoybox
-## gcloud services enable iam.googleapis.com --project=dctoybox
+# IAM bindings for the service accounts created in project_setup
+# These were previously defined in the CFF iam-service-account modules directly.
+# Now, we apply them at the root level to the SAs produced by project_setup.
 
-#########################
-# Creates the GCP project using the Cloud Foundation Fabric project module.
-module "project" {
-  source                = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/project?ref=v36.1.0"
-  billing_account       = var.billing_account_id
-  name                  = var.project_id
-  parent                = var.folder_id
-  services              = local.services
-  iam_bindings_additive = local.iams
-  org_policies = {
-    "compute.requireOsLogin" = {
-      rules = [{ enforce = false }]
-    }
-  }
+resource "google_project_iam_member" "default_sa_project_roles" {
+  project = module.project_setup.project_id
+  for_each = toset([ # Roles from original project-default-service-accounts
+    "roles/bigquery.jobUser",
+    "roles/bigquery.dataEditor",
+    "roles/bigquery.user",
+    "roles/storage.admin",
+    "roles/pubsub.editor"
+  ])
+  role   = each.key
+  member = "serviceAccount:${module.project_setup.default_service_account_email}"
 }
 
-# Grants the required IAM permissions role to the default Compute Engine service account for the project.
-resource "google_project_iam_member" "iam-bindings-default-project-compute-sa" {
-  project = module.project.project_id
-  role    = "roles/dataproc.worker"
-  member  = "serviceAccount:${module.project.number}-compute@developer.gserviceaccount.com"
-
-  depends_on = [module.project] # Ensures project and APIs (like compute) are enabled first
+resource "google_project_iam_member" "cloudbuild_sa_project_roles" {
+  project = module.project_setup.project_id
+  for_each = toset([ # Roles from original project-cloudbuild-service-accounts
+    "roles/storage.admin",
+    "roles/artifactregistry.createOnPushWriter",
+    "roles/artifactregistry.reader",
+    "roles/artifactregistry.writer",
+    "roles/iam.serviceAccountUser",
+    "roles/logging.logWriter",
+    "roles/cloudbuild.builds.editor"
+  ])
+  role   = each.key
+  member = "serviceAccount:${module.project_setup.cloudbuild_service_account_email}"
 }
 
-# Manages the default service account for the project using the Cloud Foundation Fabric IAM service account module.
-module "project-default-service-accounts" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
-  project_id = module.project.project_id
-  name       = "sa-default"
-  # non-authoritative roles granted *to* the service accounts on other resources
-  iam_project_roles = {
-    "${var.project_id}" = [
-      "roles/bigquery.jobUser",
-      "roles/bigquery.dataEditor",
-      "roles/bigquery.user",
-      "roles/storage.admin",
-      "roles/pubsub.editor"
-    ]
-  }
+# Module 2: Networking
+module "networking" {
+  source   = "./modules/networking"
+
+  project_id        = module.project_setup.project_id
+  resource_location = var.resource_location
+  vpc_name          = "${var.project_id}-vpc" # From original main.tf
+  subnet_name       = "us-subnet"             # From original main.tf
+  subnet_ip_cidr_range = "10.0.1.0/24"        # From original main.tf
+  subnet_description   = "Subnet us-central"  # From original main.tf
+  
+  # Firewall settings from original main.tf
+  firewall_admin_ranges               = ["10.0.1.0/24"]
+  firewall_ingress_source_ranges      = ["10.0.1.0/24"]
+  firewall_ingress_sources_tags_or_sa = ["dataflow"]
+  firewall_ingress_target_tags_or_sa  = ["dataflow"]
+  # nat_name default is fine
 }
 
-# Manages the Cloud Build service account for the project using the Cloud Foundation Fabric IAM service account module.
-module "project-cloudbuild-service-accounts" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
-  project_id = module.project.project_id
-  name       = "sabuild-default"
-  # non-authoritative roles granted *to* the service accounts on other resources
-  iam_project_roles = {
-    "${module.project.project_id}" = [
-      "roles/storage.admin",
-      "roles/artifactregistry.createOnPushWriter",
-      "roles/artifactregistry.reader",
-      "roles/artifactregistry.writer",
-      "roles/iam.serviceAccountUser",
-      "roles/logging.logWriter",
-      "roles/cloudbuild.builds.editor"
-    ]
-  }
-}
+# Module 3: Storage
+module "storage" {
+  source   = "./modules/storage"
 
-# Creates a Virtual Private Cloud (VPC) network using the Cloud Foundation Fabric VPC module.
-module "my-vpc" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-vpc?ref=v36.1.0"
-  project_id = var.project_id
-  name       = "${var.project_id}-vpc"
-  subnets = [
-    # custom description and PGA disabled
-    {
-      name                  = "us-subnet"
-      region                = var.resource_location
-      ip_cidr_range         = "10.0.1.0/24",
-      description           = "Subnet us-central"
-      enable_private_access = true
-    }
-  ]
-}
-
-# Configures firewall rules for the VPC network using the Cloud Foundation Fabric VPC firewall module.
-module "my-vpc-firewall" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-vpc-firewall?ref=v36.1.0"
-  project_id = var.project_id
-  network    = module.my-vpc.name
-  default_rules_config = {
-    admin_ranges = ["10.0.1.0/24"]
-  }
-
-  ingress_rules = {
-
-    allow-ingress-tag = {
-      description   = "Allow ingress from a specific tag."
-      source_ranges = ["10.0.1.0/24"]
-      sources       = ["dataflow"]
-      targets       = ["dataflow"]
-    }
-  }
-
-}
-
-# Sets up Cloud NAT for the VPC network to allow instances without public IPs to access the internet.
-module "nat" {
-  source         = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-cloudnat?ref=v36.1.0"
-  project_id     = module.project.project_id
-  region         = module.my-vpc.subnets["us-central1/us-subnet"].region
-  name           = "default"
-  router_network = module.my-vpc.self_link
-}
-
-# Reads the BigQuery table schema from a local JSON file.
-data "local_file" "table_schema" {
-  filename = "./table_schema.json"
-}
-
-# Reads the Pub/Sub topic schema from a local JSON file.
-data "local_file" "topic_schema" {
-  filename = "./topic_schema.json"
-}
-
-# Generates a random string to ensure unique GCS bucket names.
-resource "random_string" "bucket_suffix" {
-  length  = 6
-  lower   = true
-  upper   = false
-  special = false
-}
-# Creates a Google Cloud Storage (GCS) bucket using the Cloud Foundation Fabric GCS module.
-module "bucket" {
-  source                   = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/gcs?ref=v36.1.0"
-  project_id               = var.project_id
-  prefix                   = "daproject"
-  name                     = "tmp-bucket-${random_string.bucket_suffix.result}"
-  location                 = var.resource_location
+  project_id               = module.project_setup.project_id
+  location                 = var.resource_location # GCS location, e.g., "US" or a region
+  bucket_prefix            = "daproject" # From original module "bucket"
   public_access_prevention = var.public_access_prevention
-  versioning               = false
-  labels = {
+  enable_versioning        = false # From original module "bucket"
+  bucket_labels = { # From original module "bucket"
     cost-center = "devops"
   }
 }
 
-# Creates a BigQuery dataset and a table within it using the Cloud Foundation Fabric BigQuery dataset module.
-module "bigquery-dataset" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/bigquery-dataset?ref=v36.1.0"
-  project_id = module.project.project_id
-  id         = "demo_txn_dataset"
-  location   = var.resource_location
-  options = {
-    # default_table_expiration_ms     = 3600000
-    default_partition_expiration_ms = null
-    delete_contents_on_destroy      = true
-    max_time_travel_hours           = 168
-  }
-  tables = {
-    fake_txn = {
-      deletion_protection = false
-      friendly_name       = "Fake Txn"
-      schema              = data.local_file.table_schema.content
-      partitioning = {
-        time = { type = "DAY", expiration_ms = null }
-      }
-    }
-  }
+# Module 4: Data Platform
+module "data_platform" {
+  source   = "./modules/data_platform"
+
+  project_id                            = module.project_setup.project_id
+  location                              = var.resource_location # For BQ dataset, e.g., "US"
+  dataset_id                            = "demo_txn_dataset"    # From original main.tf
+  table_name                            = "fake_txn"            # From original main.tf
+  table_schema_path                     = "./table_schema.json" # Path relative to root
+  topic_name                            = "fake-txn-topic"      # From original main.tf
+  topic_schema_path                     = "./topic_schema.json" # Path relative to root
+  pubsub_subscriber_service_account_email = module.project_setup.default_service_account_email
+  delete_bq_contents_on_destroy       = true # From original main.tf
 }
 
-# Creates a Pub/Sub topic with a schema and a BigQuery subscription using the Cloud Foundation Fabric Pub/Sub module.
-module "pubsub" {
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/pubsub?ref=v36.1.0"
-  project_id = var.project_id
-  name       = "fake-txn-topic"
-  # iam = {
-  #   "roles/pubsub.editor" = ["serviceAccount:${module.project-default-service-accounts.email}"]
-  # }
-  schema = {
-    msg_encoding = "JSON"
-    schema_type  = "AVRO"
-    definition   = (data.local_file.topic_schema.content)
-  }
-  subscriptions = {
-    fake-txn-sub-bigquery = {
-      bigquery = {
-        table                 = "${module.bigquery-dataset.tables["fake_txn"].project}:${module.bigquery-dataset.tables["fake_txn"].dataset_id}.${module.bigquery-dataset.tables["fake_txn"].table_id}"
-        use_topic_schema      = true
-        write_metadata        = false
-        drop_unknown_fields   = true
-        service_account_email = module.project-default-service-accounts.email
-      }
-    }
-  }
-}
+# Module 5: Stream Generator (Application)
+module "stream_generator" {
+  source   = "./modules/stream_generator"
 
-# Generates the Python script for the data generator Cloud Run service using a template file.
-resource "local_file" "local_pyfile_to_deploy" {
-  filename = "./streamdata-generator/main.py"
-  content = templatefile("./streamdata-generator/main.tpl",
-    {
-      project_id = var.project_id
-      topic_name = module.pubsub.topic.name
-    }
-  )
-}
+  project_id                        = module.project_setup.project_id
+  region                            = var.resource_location
+  cloud_run_service_name            = "streamdata-generator" # From original main.tf
+  container_image_name              = "streamdata-generator" # Used to construct GCR path
+  cloud_build_sa_email              = module.project_setup.cloudbuild_service_account_email
+  cloud_run_sa_email                = module.project_setup.default_service_account_email
+  temp_bucket_url_for_build         = module.storage.bucket_url # gs://bucket-name
+  pubsub_topic_name_for_generator   = module.data_platform.topic_name # Just the name
+  
+  # Paths to templates - these must exist at the root or specified path
+  python_script_template_path     = "./streamdata-generator/main.tpl"
+  cloudbuild_yaml_template_path   = "./streamdata-generator/cloudbuild.tpl"
+  generator_source_code_directory = "./streamdata-generator" # Dir with Dockerfile etc.
 
-# Generates the Cloud Build configuration file for deploying the data generator service.
-resource "local_file" "local_buildfile_to_deploy" {
-  filename = "./streamdata-generator/cloudbuild.yaml"
-  content = templatefile("./streamdata-generator/cloudbuild.tpl",
-    {
-      project_id = var.project_id
-      build_sa   = module.project-cloudbuild-service-accounts.email
-      tmp_bucket = module.bucket.url
-    }
-  )
-}
-
-# Triggers a Cloud Build pipeline to build and push the data generator container image.
-resource "null_resource" "run_cloudbuild_script" {
-
-  depends_on = [local_file.local_buildfile_to_deploy]
-
-  triggers = {
-    script_hash = "${sha256(local_file.local_pyfile_to_deploy.content)}"
-  }
-
-  # Use local-exec to run the script.
-  provisioner "local-exec" {
-    command = "gcloud builds submit --config ./streamdata-generator/cloudbuild.yaml ./streamdata-generator --project=${module.project.project_id}"
-  }
-}
-
-# Deploys the data generator as a Cloud Run v2 job using the Cloud Foundation Fabric Cloud Run v2 module.
-module "cloud_run" {
-
-  depends_on = [null_resource.run_cloudbuild_script]
-
-  source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/cloud-run-v2?ref=v36.1.0"
-  project_id = module.project.project_id
-  name       = "streamdata-generator"
-  region     = var.resource_location
-  create_job = true
-  containers = {
-    streamdata-generator = {
-      image = "gcr.io/${module.project.project_id}/streamdata-generator"
-      env = {
-        GOOGLE_CLOUD_PROJECT = "${module.project.project_id}"
-        PUBSUB_TOPIC         = "${module.pubsub.topic.name}"
-        MIN_TPS              = 100
-        MAX_TPS              = 2000
-      }
-    }
-  }
-  service_account_create = false
-  service_account        = module.project-default-service-accounts.email
-  # iam = {
-  #   "roles/run.invoker" = ["serviceAccount:${module.project-default-service-accounts.email}"]
-  # }
-  deletion_protection = false
+  # Min/Max TPS from original main.tf's cloud_run module
+  min_tps = 100
+  max_tps = 2000
 }
