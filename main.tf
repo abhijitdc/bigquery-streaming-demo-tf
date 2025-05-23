@@ -30,10 +30,13 @@ locals {
     "pubsub.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "run.googleapis.com"
+    "run.googleapis.com",
+    "serviceusage.googleapis.com",
+    "logging.googleapis.com"
   ]
 }
 
+# Creates the GCP project using the Cloud Foundation Fabric project module.
 module "project" {
   source                = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/project?ref=v36.1.0"
   billing_account       = var.billing_account_id
@@ -41,8 +44,25 @@ module "project" {
   parent                = var.folder_id
   services              = local.services
   iam_bindings_additive = local.iams
+  # org_policies = {
+  #   "constraints/compute.requireOsLogin" = {
+  #     rules = [{
+  #       default = true
+  #     }]
+  #   }
+  # }
 }
 
+# Grants the required IAM permissions role to the default Compute Engine service account for the project.
+resource "google_project_iam_member" "iam-bindings-default-project-compute-sa" {
+  project = module.project.project_id
+  role    = "roles/dataproc.worker"
+  member  = "serviceAccount:${module.project.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [module.project] # Ensures project and APIs (like compute) are enabled first
+}
+
+# Manages the default service account for the project using the Cloud Foundation Fabric IAM service account module.
 module "project-default-service-accounts" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
   project_id = module.project.project_id
@@ -59,7 +79,7 @@ module "project-default-service-accounts" {
   }
 }
 
-
+# Manages the Cloud Build service account for the project using the Cloud Foundation Fabric IAM service account module.
 module "project-cloudbuild-service-accounts" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/iam-service-account?ref=v36.1.0"
   project_id = module.project.project_id
@@ -78,8 +98,7 @@ module "project-cloudbuild-service-accounts" {
   }
 }
 
-
-
+# Creates a Virtual Private Cloud (VPC) network using the Cloud Foundation Fabric VPC module.
 module "my-vpc" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-vpc?ref=v36.1.0"
   project_id = var.project_id
@@ -96,6 +115,7 @@ module "my-vpc" {
   ]
 }
 
+# Configures firewall rules for the VPC network using the Cloud Foundation Fabric VPC firewall module.
 module "my-vpc-firewall" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-vpc-firewall?ref=v36.1.0"
   project_id = var.project_id
@@ -116,6 +136,7 @@ module "my-vpc-firewall" {
 
 }
 
+# Sets up Cloud NAT for the VPC network to allow instances without public IPs to access the internet.
 module "nat" {
   source         = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-cloudnat?ref=v36.1.0"
   project_id     = module.project.project_id
@@ -124,22 +145,24 @@ module "nat" {
   router_network = module.my-vpc.self_link
 }
 
+# Reads the BigQuery table schema from a local JSON file.
 data "local_file" "table_schema" {
   filename = "./table_schema.json"
 }
 
+# Reads the Pub/Sub topic schema from a local JSON file.
 data "local_file" "topic_schema" {
   filename = "./topic_schema.json"
 }
 
-
+# Generates a random string to ensure unique GCS bucket names.
 resource "random_string" "bucket_suffix" {
   length  = 6
   lower   = true
   upper   = false
   special = false
 }
-
+# Creates a Google Cloud Storage (GCS) bucket using the Cloud Foundation Fabric GCS module.
 module "bucket" {
   source                   = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/gcs?ref=v36.1.0"
   project_id               = var.project_id
@@ -153,7 +176,7 @@ module "bucket" {
   }
 }
 
-
+# Creates a BigQuery dataset and a table within it using the Cloud Foundation Fabric BigQuery dataset module.
 module "bigquery-dataset" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/bigquery-dataset?ref=v36.1.0"
   project_id = module.project.project_id
@@ -177,6 +200,7 @@ module "bigquery-dataset" {
   }
 }
 
+# Creates a Pub/Sub topic with a schema and a BigQuery subscription using the Cloud Foundation Fabric Pub/Sub module.
 module "pubsub" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/pubsub?ref=v36.1.0"
   project_id = var.project_id
@@ -202,6 +226,7 @@ module "pubsub" {
   }
 }
 
+# Generates the Python script for the data generator Cloud Run service using a template file.
 resource "local_file" "local_pyfile_to_deploy" {
   filename = "./streamdata-generator/main.py"
   content = templatefile("./streamdata-generator/main.tpl",
@@ -212,6 +237,7 @@ resource "local_file" "local_pyfile_to_deploy" {
   )
 }
 
+# Generates the Cloud Build configuration file for deploying the data generator service.
 resource "local_file" "local_buildfile_to_deploy" {
   filename = "./streamdata-generator/cloudbuild.yaml"
   content = templatefile("./streamdata-generator/cloudbuild.tpl",
@@ -223,6 +249,7 @@ resource "local_file" "local_buildfile_to_deploy" {
   )
 }
 
+# Triggers a Cloud Build pipeline to build and push the data generator container image.
 resource "null_resource" "run_cloudbuild_script" {
 
   depends_on = [local_file.local_buildfile_to_deploy]
@@ -237,6 +264,7 @@ resource "null_resource" "run_cloudbuild_script" {
   }
 }
 
+# Deploys the data generator as a Cloud Run v2 job using the Cloud Foundation Fabric Cloud Run v2 module.
 module "cloud_run" {
 
   depends_on = [null_resource.run_cloudbuild_script]
@@ -264,4 +292,3 @@ module "cloud_run" {
   # }
   deletion_protection = false
 }
-
