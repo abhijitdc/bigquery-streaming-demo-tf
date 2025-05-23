@@ -45,7 +45,7 @@ module "pubsub" {
     # The subscription name is dynamically constructed using the topic name.
     "${var.topic_name}-sub-bq" = { 
       bigquery = {
-        table                 = module.bigquery-dataset.tables["${var.table_name}"].id
+        table                 = "${var.project_id}:${var.dataset_id}.${var.table_name}"
         use_topic_schema      = true
         write_metadata        = false
         drop_unknown_fields   = true
