@@ -11,7 +11,7 @@ locals {
   # These local_file resources generate files on the machine where Terraform is executed.
   # The Cloud Build command (`gcloud builds submit`) must be able to access these generated files
   # (e.g., by running Terraform from a directory that is part of the build context, or by copying them).
-  generated_python_script_path = "./main_generated.py"     # Path on the machine running Terraform for the generated Python script.
+  generated_python_script_path = "${var.generator_source_code_directory}/main.py"     # Path on the machine running Terraform for the generated Python script.
   generated_cloudbuild_yaml_path = "./cloudbuild_generated.yaml" # Path on the machine running Terraform for the generated Cloud Build YAML.
 }
 
