@@ -1,7 +1,7 @@
 provider "google" {
   user_project_override = true
   # billing_project might be needed if the user running terraform isn't the project owner
-  # billing_project       = "dctoybox" # This was in the original, keep if necessary
+  billing_project       = "dctoybox" # This was in the original, keep if necessary
 }
 
 # Variables are defined in variables.tf.

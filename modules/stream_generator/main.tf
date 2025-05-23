@@ -87,12 +87,12 @@ module "cloud_run" {
     # The key for this map is the container name within the job spec
     "${var.container_image_name}" = { # Use the image name for the container key
       image = local.gcr_image_url    # Use the image built by Cloud Build
-      env = [
-        { name = "GOOGLE_CLOUD_PROJECT", value = var.project_id },
-        { name = "PUBSUB_TOPIC", value = var.pubsub_topic_name_for_generator }, # Just the name
-        { name = "MIN_TPS", value = var.min_tps },
-        { name = "MAX_TPS", value = var.max_tps }
-      ]
+      env = {
+        "GOOGLE_CLOUD_PROJECT" = var.project_id,
+        "PUBSUB_TOPIC"         = var.pubsub_topic_name_for_generator, # Just the name
+        "MIN_TPS"              = tostring(var.min_tps),
+        "MAX_TPS"              = tostring(var.max_tps)
+      }
       # Add other container settings like resources, ports if it were a service
     }
   }
