@@ -5,9 +5,7 @@ variable "tfrunner_user_email" {
 
 variable "project_id_suffix" {
   type        = string
-  description = "Suffix for the project ID. The actual project ID will be composed based on other factors if needed, or this can be the full ID if desired."
-  # Example: if you want project_id to be "my-gcp-project", this could be "my-gcp-project"
-  # Or if you have a standard prefix, this could be "suffix" and prefix is handled in module main.tf
+  description = "The desired name or suffix for the Google Cloud project ID."
 }
 
 variable "billing_account_id" {
@@ -28,6 +26,6 @@ variable "custom_services" {
 
 variable "enable_oslogin" {
   type        = bool
-  default     = false # Defaulting to false to match original behavior unless overridden
-  description = "Whether to enforce OS Login on the project. True for enforced, false for not enforced."
+  default     = false
+  description = "Whether to enforce OS Login on the project. Set to true to enforce OS Login, false otherwise."
 }

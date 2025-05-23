@@ -12,7 +12,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "dctoybox-tfstate"                # Use your existing bucket
-    prefix = "terraform/bqstreamproject/state" # Example prefix
+    bucket = "dctoybox-tfstate"                # GCS bucket for storing Terraform state.
+    prefix = "terraform/bqstreamproject/state" # Prefix within the GCS bucket for this project's state.
   }
 }

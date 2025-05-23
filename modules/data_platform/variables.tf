@@ -23,7 +23,6 @@ variable "table_name" {
 variable "table_schema_path" {
   type        = string
   description = "Path to the JSON file defining the BigQuery table schema."
-  # This will be relative to the root module in practice, or could be module path
 }
 
 variable "topic_name" {
@@ -35,7 +34,6 @@ variable "topic_name" {
 variable "topic_schema_path" {
   type        = string
   description = "Path to the JSON file defining the Pub/Sub topic schema."
-  # This will be relative to the root module in practice, or could be module path
 }
 
 variable "pubsub_subscriber_service_account_email" {
