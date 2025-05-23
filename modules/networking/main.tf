@@ -10,7 +10,7 @@ module "my-vpc" {
       region                = var.resource_location
       ip_cidr_range         = var.subnet_ip_cidr_range
       description           = var.subnet_description
-      enable_private_access = true # Assuming this is generally desired for this subnet
+      enable_private_access = true # Enables private Google access for this subnet.
     }
   ]
 }
@@ -18,16 +18,14 @@ module "my-vpc" {
 module "my-vpc-firewall" {
   source     = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-vpc-firewall?ref=v36.1.0"
   project_id = var.project_id
-  network    = module.my-vpc.name # Reference the VPC created in this module
+  network    = module.my-vpc.name
   default_rules_config = {
     admin_ranges = var.firewall_admin_ranges
   }
   ingress_rules = {
-    # Example rule name, can be made more dynamic if needed
     "allow-custom-ingress" = {
       description   = "Allow custom ingress based on module variables."
       source_ranges = var.firewall_ingress_source_ranges
-      # Fabric module might require actual lists for sources/targets, not just strings if multiple
       sources       = var.firewall_ingress_sources_tags_or_sa 
       targets       = var.firewall_ingress_target_tags_or_sa
     }
@@ -37,7 +35,7 @@ module "my-vpc-firewall" {
 module "nat" {
   source         = "github.com/GoogleCloudPlatform/cloud-foundation-fabric/modules/net-cloudnat?ref=v36.1.0"
   project_id     = var.project_id
-  region         = var.resource_location # Assumes NAT is in the same region as the subnet
+  region         = var.resource_location # Configures the NAT gateway in the same region as the subnet.
   name           = var.nat_name
-  router_network = module.my-vpc.self_link # Reference the VPC created in this module
+  router_network = module.my-vpc.self_link
 }

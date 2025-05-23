@@ -35,25 +35,25 @@ variable "subnet_description" {
 variable "firewall_admin_ranges" {
   type        = list(string)
   description = "List of IP CIDR ranges for admin access in default firewall rules."
-  default     = ["10.0.1.0/24"] # Defaulting to the current value in main.tf
+  default     = ["10.0.1.0/24"]
 }
 
 variable "firewall_ingress_source_ranges" {
   type        = list(string)
   description = "List of source IP CIDR ranges for custom ingress rules."
-  default     = ["10.0.1.0/24"] # Defaulting to the current value in main.tf
+  default     = ["10.0.1.0/24"]
 }
 
 variable "firewall_ingress_sources_tags_or_sa" {
   type        = list(string)
   description = "List of source tags or service accounts for custom ingress rules."
-  default     = ["dataflow"] # Defaulting to the current value in main.tf
+  default     = ["dataflow"]
 }
 
 variable "firewall_ingress_target_tags_or_sa" {
   type        = list(string)
   description = "List of target tags or service accounts for custom ingress rules."
-  default     = ["dataflow"] # Defaulting to the current value in main.tf
+  default     = ["dataflow"]
 }
 
 variable "nat_name" {

@@ -11,7 +11,7 @@ variable "location" {
 variable "bucket_prefix" {
   type        = string
   description = "Prefix for the GCS bucket name."
-  default     = "daproject-tmp" # Matches current use, but more generic
+  default     = "daproject-tmp"
 }
 
 variable "public_access_prevention" {
